@@ -105,6 +105,46 @@ try {
 
 System.out.println("Queries: " + queries.get()); // Prints 2
 ```
+
+The `executeInsert` and `executeUpdateDelete` methods from `SQLiteStatement` are
+available on a `BriteDatabase` to send out triggers when compiled statements are
+executed.
+
+```java
+final AtomicInteger queries = new AtomicInteger();
+users.subscribe(new Action1<Query>() {
+  @Override public void call(Query query) {
+    queries.getAndIncrement();
+  }
+});
+System.out.println("Queries: " + queries.get()); // Prints 1
+
+SQLiteDatabase database = openHelper.getWriteableDatabase();
+try {
+  SQLiteStatement insert = database.compileStatement("INSERT INTO users (username, fullname) VALUES (?, ?)");
+} finally {
+  database.close();
+}
+
+Transaction transaction = db.newTransaction
+
+try {
+  insert.bindString(1, "jw");
+  insert.bindString(2, "Jake Wharton");
+  db.executeInsert("users", insert);
+  insert.bindString(1, "mattp");
+  insert.bindString(2, "Matt Precious");
+  db.executeInsert("users", insert);
+  insert.bindString(1, "strong");
+  insert.bindString(2, "Alec Strong");
+  db.executeInsert("users", insert);
+} finally {
+  transaction.end();
+}
+
+System.out.println("Queries: " + queries.get()); // Prints 2
+```
+
 *Note: You can also use try-with-resources with a `Transaction` instance.*
 
 Since queries are just regular RxJava `Observable` objects, operators can also be used to
